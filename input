@@ -804,7 +804,7 @@ pid:470039281
 byr:1967 iyr:2017
 ecl:gry eyr:2021
 hgt:171cm
-hcl:#7d3b0c= stdin.lock().lines()
+hcl:#7d3b0c
 
 hcl:#bdf8d6 iyr:2018 byr:1954 eyr:2030
 ecl:blu hgt:184cm pid:694267794
