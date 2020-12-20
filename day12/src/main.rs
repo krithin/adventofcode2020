@@ -55,55 +55,32 @@ fn main() {
                 CardinalDirection::N => y += arg,
                 CardinalDirection::S => y -= arg,
             },
-            Direction::Relative(r) => match r {
-                RelativeDirection::F => match heading {
+            Direction::Relative(r) => match (r, arg) {
+                (RelativeDirection::F, _) => match heading {
                     CardinalDirection::E => x += arg,
                     CardinalDirection::W => x -= arg,
                     CardinalDirection::N => y += arg,
                     CardinalDirection::S => y -= arg,
                 },
-                RelativeDirection::R => match arg {
-                    90 => match heading { 
-                        CardinalDirection::E => heading = CardinalDirection::S,
-                        CardinalDirection::W => heading = CardinalDirection::N,
-                        CardinalDirection::N => heading = CardinalDirection::E,
-                        CardinalDirection::S => heading = CardinalDirection::W,
-                    },
-                    180 => match heading { 
-                        CardinalDirection::E => heading = CardinalDirection::W,
-                        CardinalDirection::W => heading = CardinalDirection::E,
-                        CardinalDirection::N => heading = CardinalDirection::S,
-                        CardinalDirection::S => heading = CardinalDirection::N,
-                    },
-                    270 => match heading { 
-                        CardinalDirection::E => heading = CardinalDirection::N,
-                        CardinalDirection::W => heading = CardinalDirection::S,
-                        CardinalDirection::N => heading = CardinalDirection::W,
-                        CardinalDirection::S => heading = CardinalDirection::E,
-                    },
-                    _ => panic!("non-axis-aligned rotation"),
+                (RelativeDirection::R, 90) | (RelativeDirection::L, 270) => match heading {
+                    CardinalDirection::E => heading = CardinalDirection::S,
+                    CardinalDirection::W => heading = CardinalDirection::N,
+                    CardinalDirection::N => heading = CardinalDirection::E,
+                    CardinalDirection::S => heading = CardinalDirection::W,
                 },
-                RelativeDirection::L => match arg {
-                    270 => match heading { 
-                        CardinalDirection::E => heading = CardinalDirection::S,
-                        CardinalDirection::W => heading = CardinalDirection::N,
-                        CardinalDirection::N => heading = CardinalDirection::E,
-                        CardinalDirection::S => heading = CardinalDirection::W,
-                    },
-                    180 => match heading { 
-                        CardinalDirection::E => heading = CardinalDirection::W,
-                        CardinalDirection::W => heading = CardinalDirection::E,
-                        CardinalDirection::N => heading = CardinalDirection::S,
-                        CardinalDirection::S => heading = CardinalDirection::N,
-                    },
-                    90 => match heading { 
-                        CardinalDirection::E => heading = CardinalDirection::N,
-                        CardinalDirection::W => heading = CardinalDirection::S,
-                        CardinalDirection::N => heading = CardinalDirection::W,
-                        CardinalDirection::S => heading = CardinalDirection::E,
-                    },
-                    _ => panic!("non-axis-aligned rotation"),
+                (RelativeDirection::R, 180) | (RelativeDirection::L, 180) => match heading {
+                    CardinalDirection::E => heading = CardinalDirection::W,
+                    CardinalDirection::W => heading = CardinalDirection::E,
+                    CardinalDirection::N => heading = CardinalDirection::S,
+                    CardinalDirection::S => heading = CardinalDirection::N,
                 },
+                (RelativeDirection::R, 270) | (RelativeDirection::L, 90) => match heading {
+                    CardinalDirection::E => heading = CardinalDirection::N,
+                    CardinalDirection::W => heading = CardinalDirection::S,
+                    CardinalDirection::N => heading = CardinalDirection::W,
+                    CardinalDirection::S => heading = CardinalDirection::E,
+                },
+                (RelativeDirection::R, _) | (RelativeDirection::L, _) => panic!("Bad rotation angle"),
             }
         }
         println!("{} {} {} {:?}", line, x, y, heading);
