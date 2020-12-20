@@ -40,50 +40,33 @@ impl std::str::FromStr for Direction {
 fn main() {
     let stdin = io::stdin();
 
-    let mut heading: CardinalDirection = CardinalDirection::E;
-    let mut x: i16 = 0;  // Easting
-    let mut y: i16 = 0;  // Northing
+    let mut x: i16 = 10; // Waypoint Easting
+    let mut y: i16 = 1;  // Waypoint Northing
+    let mut ship_x: i32 = 0;
+    let mut ship_y: i32 = 0;
 
     for line in stdin.lock().lines() {
         let line = line.unwrap();
         let dir: Direction = line[0..1].parse().unwrap();
         let arg: i16 = line[1..].parse().unwrap();
-        match dir {
+
+        let (newx, newy) = match dir {
             Direction::Cardinal(c) => match c {
-                CardinalDirection::E => x += arg,
-                CardinalDirection::W => x -= arg,
-                CardinalDirection::N => y += arg,
-                CardinalDirection::S => y -= arg,
+                CardinalDirection::E => (x + arg, y),
+                CardinalDirection::W => (x - arg, y),
+                CardinalDirection::N => (x, y + arg),
+                CardinalDirection::S => (x, y - arg),
             },
             Direction::Relative(r) => match (r, arg) {
-                (RelativeDirection::F, _) => match heading {
-                    CardinalDirection::E => x += arg,
-                    CardinalDirection::W => x -= arg,
-                    CardinalDirection::N => y += arg,
-                    CardinalDirection::S => y -= arg,
-                },
-                (RelativeDirection::R, 90) | (RelativeDirection::L, 270) => match heading {
-                    CardinalDirection::E => heading = CardinalDirection::S,
-                    CardinalDirection::W => heading = CardinalDirection::N,
-                    CardinalDirection::N => heading = CardinalDirection::E,
-                    CardinalDirection::S => heading = CardinalDirection::W,
-                },
-                (RelativeDirection::R, 180) | (RelativeDirection::L, 180) => match heading {
-                    CardinalDirection::E => heading = CardinalDirection::W,
-                    CardinalDirection::W => heading = CardinalDirection::E,
-                    CardinalDirection::N => heading = CardinalDirection::S,
-                    CardinalDirection::S => heading = CardinalDirection::N,
-                },
-                (RelativeDirection::R, 270) | (RelativeDirection::L, 90) => match heading {
-                    CardinalDirection::E => heading = CardinalDirection::N,
-                    CardinalDirection::W => heading = CardinalDirection::S,
-                    CardinalDirection::N => heading = CardinalDirection::W,
-                    CardinalDirection::S => heading = CardinalDirection::E,
-                },
+                (RelativeDirection::F, _) => {ship_x += x as i32 * arg as i32; ship_y += y as i32 * arg as i32; (x, y)},
+                (RelativeDirection::R, 90) | (RelativeDirection::L, 270) => (y, -x),
+                (RelativeDirection::R, 180) | (RelativeDirection::L, 180) => (-x, -y),
+                (RelativeDirection::R, 270) | (RelativeDirection::L, 90) => (-y, x),
                 (RelativeDirection::R, _) | (RelativeDirection::L, _) => panic!("Bad rotation angle"),
             }
-        }
-        println!("{} {} {} {:?}", line, x, y, heading);
+        };
+        x = newx; y = newy;
+        println!("{} {} {} {} {}", line, x, y, ship_x, ship_y);
     }
-    println!("Manhattan Distance: {}", x.abs() + y.abs());
+    println!("Manhattan Distance: {}", ship_x.abs() + ship_y.abs());
 }
