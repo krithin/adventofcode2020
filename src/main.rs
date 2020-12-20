@@ -1,31 +1,30 @@
 use std::{io, io::prelude::*};
-use std::collections::HashSet;
-use std::collections::VecDeque;
-
-fn generate_all_sums(preamble: &VecDeque<u64>) -> HashSet<u64> {
-    let mut sums: HashSet<u64> = HashSet::with_capacity(300);
-    for i in 0..preamble.len() {
-        for j in i+1..preamble.len() {
-            sums.insert(preamble[i] + preamble[j]);
-        }
-    }
-    return sums;
-}
 
 fn main() {
     let stdin = io::stdin();
-    let mut preamble: VecDeque<u64> = VecDeque::with_capacity(25);
+    let target: u64 = 1038347917;
+    let mut sums: Vec<u64> = Vec::new();
+    let mut values: Vec<u64> = Vec::new();
 
     for line in stdin.lock().lines() {
         let n = line.unwrap().parse::<u64>().unwrap();
-        if preamble.len() < 25 {
-            preamble.push_back(n)
-        } else {
-            if !generate_all_sums(&preamble).contains(&n) {
-                println!("number not found: {}", n);
-            } else {
-                preamble.pop_front();
-                preamble.push_back(n);
+        values.push(n);
+        sums.push(0);
+        for i in 1..sums.len() {
+            sums[i] += n;
+            if sums[i] == target {
+                println!("i: {}, len: {}", i, sums.len());
+                let mut min = values[i];
+                let mut max = values[i];
+                for j in values[i..].iter() {
+                    if j < &min {
+                        min = *j;
+                    }
+                    if j > &max {
+                        max = *j;
+                    }
+                }
+                println!("sum {}", min+max);
             }
         }
     }
