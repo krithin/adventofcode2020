@@ -63,20 +63,36 @@ fn main() {
     println!("nearby_tickets:\n{:?}", nearby_tickets);
 
     // Part 1
-    let mut error_rate: u32 = 0;
-    for ticket in nearby_tickets {
-        for value in &ticket {
-            let mut valid = false;
-            for (_name, ((min1, max1), (min2, max2))) in &fields {
-                if (min1 <= value && value <= max1) || (min2 <= value && value <= max2) {
-                    valid = true;
+    let error_rate: u32 = nearby_tickets.iter().map(
+        |ticket|
+        ticket.iter().map(
+            |value| {
+                for (_name, ((min1, max1), (min2, max2))) in &fields {
+                    if (min1 <= value && value <= max1) || (min2 <= value && value <= max2) {
+                        return 0;
+                    }
                 }
+                return *value as u32;
             }
-            if !valid {
-                error_rate += *value as u32;
-            }
-        }
-    }
+        ).sum::<u32>()
+    ).sum();
 
     println!("Error rate: {}", error_rate);
+
+    // Part 2
+    let valid_tickets: Vec<Vec<u16>> = nearby_tickets.iter().filter(
+        |&ticket|
+        ticket.iter().all(
+            |value| {
+                for (_name, ((min1, max1), (min2, max2))) in &fields {
+                    if (min1 <= value && value <= max1) || (min2 <= value && value <= max2) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        )
+    ).cloned().collect();
+
+
 }
