@@ -1,20 +1,27 @@
-//use std::{io, io::prelude::*};
+struct BusPosition {
+    bus_id: u64,
+    position: u64,
+}
 
 fn main() {
-    let earliest_timestamp: u32 = 1014511;
     let bus_ids = "17,x,x,x,x,x,x,41,x,x,x,x,x,x,x,x,x,643,x,x,x,x,x,x,x,23,x,x,x,x,13,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,29,x,433,x,x,x,x,x,37,x,x,x,x,x,x,x,x,x,x,x,x,19";
-    let bus_ids: Vec<u32> = bus_ids.split(',').filter(|&s| s != "x").map(|s| s.parse().unwrap()).collect();
 
-    let wait_times: Vec<u32> = bus_ids.iter().map(|&b| (b - (earliest_timestamp % b)) % b).collect();
+    let bus_positions: Vec<BusPosition> =
+        bus_ids.split(',')
+            .enumerate()
+            .filter(|(_i, bus_id)| *bus_id != "x")
+            .map(|(i, bus_id)| BusPosition { bus_id: bus_id.parse().unwrap(), position: i as u64 })
+            .collect();
 
-    let mut shortest_wait = u32::MAX;
-    let mut shortest_wait_bus = 0;
-    for i in 0..bus_ids.len() {
-        if wait_times[i] < shortest_wait {
-            shortest_wait = wait_times[i];
-            shortest_wait_bus = bus_ids[i];
+    let mut increment: u64 = 1;
+    let mut start = 0;  // Earliest possible start identified so far.
+
+    for bus in bus_positions {
+        while (start + bus.position) % bus.bus_id != 0 {
+            start += increment;
         }
+        increment *= bus.bus_id;  // All the input bus IDs are coprime!
     }
 
-    println!("{} {} {}", shortest_wait, shortest_wait_bus, shortest_wait * shortest_wait_bus);
+    println!("{}", start);
 }
