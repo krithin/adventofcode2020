@@ -1,25 +1,25 @@
 use std::collections::HashMap;
 
 fn main() {
-    let starting_numbers: Vec<usize> = vec![0,14,6,20,1,4];
-    let mut n: Vec<usize> = Vec::with_capacity(30000000);
-    let mut last_seen: HashMap<usize, usize> = HashMap::new();
+    let starting_numbers: Vec<u32> = vec![0,14,6,20,1,4];
+    let mut last_n: u32;
+    let mut turn_num: u32 = 0;
+    let mut last_seen: HashMap<u32, u32> = HashMap::new();
 
     for &s in &starting_numbers[..starting_numbers.len()-1] {
-        n.push(s);
-        last_seen.insert(s, n.len());
+        turn_num = turn_num + 1;
+        last_seen.insert(s, turn_num);
     }
 
-    n.push(*starting_numbers.last().unwrap());
+    last_n = *starting_numbers.last().unwrap();
+    turn_num += 1;
 
-    while n.len() < 30000000 {
-        n.push(
-            match last_seen.insert(*n.last().unwrap(), n.len()) {
-                None => 0,
-                Some(i) => n.len() - i,
-            }
-        );
+    for turn_num in turn_num..30000000 {
+        last_n = match last_seen.insert(last_n, turn_num) {
+            None => 0,
+            Some(i) => turn_num - i,
+        };
     }
 
-    println!("{}", *n.last().unwrap());
+    println!("{}", last_n);
 }
