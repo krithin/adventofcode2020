@@ -1,5 +1,6 @@
 use std::{io, io::prelude::*};
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 fn main() {
     let stdin = io::stdin();
@@ -58,9 +59,9 @@ fn main() {
 
     let nearby_tickets: Vec<Vec<u16>> = nearby_tickets.iter().map(|s| s.split(',').map(|n| n.parse().unwrap()).collect()).collect();
 
-    println!("fields:\n{:?}", fields);
-    println!("your_ticket:\n{:?}", your_ticket);
-    println!("nearby_tickets:\n{:?}", nearby_tickets);
+    //println!("fields:\n{:?}", fields);
+    //println!("your_ticket:\n{:?}", your_ticket);
+    //println!("nearby_tickets:\n{:?}", nearby_tickets);
 
     // Part 1
     let error_rate: u32 = nearby_tickets.iter().map(
@@ -94,5 +95,51 @@ fn main() {
         )
     ).cloned().collect();
 
+    //println!("valid_tickets:\n{:?}", nearby_tickets);
 
+    let mut field_cols: HashMap<String, HashSet<usize>> = fields.iter()
+        .map(|(name, ((min1, max1),(min2,max2)))|
+            (
+                name.clone(),
+                (0..valid_tickets[0].len())
+                    .filter( |col|
+                        valid_tickets.iter()
+                            .map(|ticket| ticket.get(*col).unwrap())
+                            .all( |v|  (min1 <= v && v <= max1) || (min2 <= v && v<= max2))
+                    ).collect::<HashSet<usize>>()
+            )
+        ).collect();
+
+    //println!("field_cols:\n{:?}", field_cols);
+
+    let mut field_col_assignments: HashMap<String, usize> = HashMap::new();
+    while !(&field_cols.is_empty()) {
+        // greedily pick columns, because that's good enough for this dataset
+        let mut field_to_remove = String::new();
+        for (name, cols) in &field_cols {
+            if cols.len() == 1 {
+                field_to_remove = name.clone();
+            }
+        }
+        if field_to_remove.len() > 0 {
+            let cols = field_cols.remove(&field_to_remove).unwrap();
+            assert_eq!(cols.len(), 1);
+            let col = *cols.iter().next().unwrap();
+            field_col_assignments.insert(field_to_remove, col);
+            for (_name, set) in &mut field_cols {
+                set.remove(&col);
+            }
+        } else {
+            panic!("Greedy deletion failure!")
+        }
+    }
+
+    //println!("field_col_assignments: {:?}", field_col_assignments);
+
+    let your_departure_product = field_col_assignments.iter()
+        .filter(|(name, _col)| name.starts_with("departure "))
+        .map(|(_name, &col)| your_ticket.get(col).unwrap())
+        .fold(1 as u64, |acc, val| acc * (*val as u64));
+
+    println!("your_departure_product: {}", your_departure_product);
 }
