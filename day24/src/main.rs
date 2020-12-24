@@ -45,6 +45,54 @@ fn flip_tile(tiles: &mut HashSet<(i16, i16)>, directions: &[Direction]) {
     }
 }
 
+struct BBox {
+    minx: i16,
+    maxx: i16,
+    miny: i16,
+    maxy: i16,
+}
+
+fn bounding_box(tiles: &HashSet<(i16, i16)>) -> BBox {
+    let minx = tiles.iter().min_by(|(_, x1), (_, x2)| x1.cmp(x2)).unwrap().1;
+    let maxx = tiles.iter().max_by(|(_, x1), (_, x2)| x1.cmp(x2)).unwrap().1;
+    let miny = tiles.iter().min_by(|(y1, _), (y2, _)| y1.cmp(y2)).unwrap().0;
+    let maxy = tiles.iter().max_by(|(y1, _), (y2, _)| y1.cmp(y2)).unwrap().0;
+    return BBox { minx, maxx, miny, maxy };
+}
+
+fn adjacent_tiles(tile: (i16, i16)) -> Vec<(i16, i16)> {
+    let (y, x) = tile;
+    return vec![
+        (y, x+1),
+        (y, x-1),
+        (y+1, x),
+        (y-1, x+1),
+        (y-1, x),
+        (y+1, x-1),
+    ];
+}
+
+fn count_adjacent_black_tiles(tiles: &HashSet<(i16, i16)>, tile: (i16, i16)) -> u8 {
+    return adjacent_tiles(tile).iter().filter(|t| tiles.contains(t)).collect::<Vec<_>>().len() as u8;
+}
+
+fn step(tiles: &HashSet<(i16, i16)>) -> HashSet<(i16, i16)> {
+    let mut newtiles: HashSet<(i16, i16)> = HashSet::new();
+    let bbox = bounding_box(tiles);
+    for y in bbox.miny-1..=bbox.maxy+1 {
+        for x in bbox.minx-1..=bbox.maxx+1 {
+            match (tiles.contains(&(y, x)), count_adjacent_black_tiles(tiles, (y, x))) {
+                (true, 0) | (true, 3..=6) => {},
+                (true, 1..=2) => {newtiles.insert((y, x));},
+                (false, 2) => {newtiles.insert((y, x));},
+                (false, 0..=1) | (false, 3..=6) => {},
+                _ => panic!("Bad tile count"),
+            }
+        }
+    }
+    return newtiles;
+}
+
 fn main() {
     let stdin = io::stdin();
     let input: Vec<String> = stdin.lock().lines().map(|l| l.unwrap()).collect();
@@ -65,6 +113,10 @@ fn main() {
             }
         }
         flip_tile(&mut black_tiles, &directions);
+    }
+
+    for _i in 1..=100 {
+        black_tiles = step(&black_tiles);
     }
 
     println!("{}", black_tiles.len());
