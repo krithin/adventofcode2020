@@ -15,13 +15,24 @@ fn play_round(deck0: &mut VecDeque<u8>, deck1: &mut VecDeque<u8>) {
             deck1.push_back(card0);
         }
     } else {
-        deck0.make_contiguous();
-        deck1.make_contiguous();
         println!("Starting new subgame with subdecks.");
-        let (newdeck0, newdeck1) = play_game(
-            &deck0.as_slices().0[0..card0 as usize],
-            &deck1.as_slices().0[0..card1 as usize]
-        );
+        let mut subdeck0: Vec<u8> = Vec::new();
+        let mut subdeck1: Vec<u8> = Vec::new();
+        for (i, val) in deck0.iter().enumerate() {
+            if i < card0 as usize {
+                subdeck0.push(*val);
+            } else {
+                break;
+            }
+        }
+        for (i, val) in deck1.iter().enumerate() {
+            if i < card1 as usize {
+                subdeck1.push(*val);
+            } else {
+                break;
+            }
+        }
+        let (newdeck0, newdeck1) = play_game(&subdeck0, &subdeck1);
         if newdeck1.len() == 0 {
             deck0.push_back(card0);
             deck0.push_back(card1);
